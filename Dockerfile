@@ -8,7 +8,7 @@ RUN apt-get update & apt-get install -y \
     python3.10 \
     python3-pip \
     git \
-    rm -rf var/lib/apt/libs/*
+    && rm -rf var/lib/apt/libs/*
 
 WORKDIR /app
 
