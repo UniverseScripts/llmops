@@ -21,8 +21,8 @@ def synchronous_generation(prompt: str, model, tokenizer, max_new_tokens: int) -
 @router.post("/", response_model=GenerateResponse)
 async def GenerateRequest(payload: GenerateContext, request: Request):
     
-    model = getattr(request.app.state.model, "model", None)
-    tokenizer = getattr(request.app.state.tokenizer, "tokenizer", None)
+    model = getattr(request.app.state, "model", None)
+    tokenizer = getattr(request.app.state, "tokenizer", None)
     
     if model is None or tokenizer is None:
         raise HTTPException(status_code=503, detail="Model uninitialized in VRAM")

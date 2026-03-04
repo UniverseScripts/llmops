@@ -66,8 +66,8 @@ async def telemetry_middleware(request: Request, call_next):
     process_time = time.time() - start_time
     
     logger.info(
-        f"Metod: {request.method} | Path: {request.url.path} | "
-        f"Status: {response.status_code} | Latency: {process_time: .4f}s"
+        f"Method: {request.method} | Path: {request.url.path} | "
+        f"Status: {response.status_code} | Latency: {process_time:.4f}s"
     )
 
     return response
