@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
 from schemas.generate import GenerateContext, GenerateResponse
 import torch
 import starlette.concurrency as concurrency
+from service.auth import verify_api_key
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
@@ -18,7 +19,7 @@ def synchronous_generation(prompt: str, model, tokenizer, max_new_tokens: int) -
         
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
     
-@router.post("/", response_model=GenerateResponse)
+@router.post("", response_model=GenerateResponse, dependencies=[Depends(verify_api_key)])
 async def GenerateRequest(payload: GenerateContext, request: Request):
     
     model = getattr(request.app.state, "model", None)
@@ -30,7 +31,6 @@ async def GenerateRequest(payload: GenerateContext, request: Request):
     prompt = f"Instruction: {payload.instructions}\n Context: {payload.context}\n Response:"
     
     try:
-        
         result = await concurrency.run_in_threadpool(
             synchronous_generation,
             prompt,

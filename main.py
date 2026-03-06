@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 import torch
@@ -6,6 +7,7 @@ from contextlib import asynccontextmanager
 from routers import handle_request
 import time
 import logging
+from security.rate_limiter import limiter
 
 
 @asynccontextmanager
@@ -52,12 +54,16 @@ async def Lifespan(app: FastAPI):
 
 app = FastAPI(title="Enterprise-grade Inference API", description="A backend router for scalable inference", version="0.1.0", lifespan=Lifespan)
 
+
 @app.get("/", description="Perform Health check on the Inference Node.")
 async def HealthCheck():
     return {"health": "healthy", "status": "active"}
-    
+
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("LLMOps Telemetry")
+
+
 
 @app.middleware("http")
 async def telemetry_middleware(request: Request, call_next):
@@ -70,6 +76,16 @@ async def telemetry_middleware(request: Request, call_next):
         f"Status: {response.status_code} | Latency: {process_time:.4f}s"
     )
 
+    return response
+
+
+@app.middleware("http")
+async def rate_limiter(request: Request, call_next):
+    client_ip = request.client.host
+    if not limiter.is_allowed(client_ip):
+        return JSONResponse(status_code=status.HTTP_429_TOO_MANY_REQUESTS, content={"detail": "Strict rate limit exceeded. Upgrade enterprise license for higher concurrency."})
+    
+    response = await call_next(request)
     return response
 
 app.include_router(handle_request.router)
