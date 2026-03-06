@@ -81,7 +81,7 @@ async def telemetry_middleware(request: Request, call_next):
 
 @app.middleware("http")
 async def rate_limiter(request: Request, call_next):
-    client_ip = request.client.host
+    client_ip = request.headers.get("CF-Connecting-IP") or request.headers.get("X-Forwarded-For") or request.client.host
     if not limiter.is_allowed(client_ip):
         return JSONResponse(status_code=status.HTTP_429_TOO_MANY_REQUESTS, content={"detail": "Strict rate limit exceeded. Upgrade enterprise license for higher concurrency."})
     
