@@ -31,4 +31,4 @@ services:
 
 networks:
   edge-network:
-   driver: bridge
+    driver: bridge

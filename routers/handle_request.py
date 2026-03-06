@@ -19,7 +19,7 @@ def synchronous_generation(prompt: str, model, tokenizer, max_new_tokens: int) -
         
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
     
-@router.post("", response_model=GenerateResponse, dependencies=[Depends(verify_api_key)])
+@router.post("/", response_model=GenerateResponse, dependencies=[Depends(verify_api_key)])
 async def GenerateRequest(payload: GenerateContext, request: Request):
     
     model = getattr(request.app.state, "model", None)
