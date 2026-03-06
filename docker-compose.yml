@@ -18,14 +18,14 @@ services:
     restart: unless-stopped
     networks:
       - edge-network
-    
+      
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: edge-ingress-tunnel
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --url http://llm-node:8000
     restart: unless-stopped
+    depends_on:
+      - llm-node
     networks:
       - edge-network
 
