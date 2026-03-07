@@ -41,3 +41,28 @@ Ensure the inference node has finished mapping the tensors into VRAM and opened 
   docker logs -f enterprise-inference-node
 ```
 Wait for: INFO: Application startup complete.
+
+## API Usage Protocol
+The endpoint strictly requires the trailing slash and an Enterprise Token header.
+
+cURL Extraction Test:
+```bash
+   curl -X POST "https://<your-generated-url>[.trycloudflare.com/generate/](https://.trycloudflare.com/generate/)" \
+        -H "Content-Type: application/json" \
+        -H "X-Enterprise-Token: sk_live_edge_node_001" \
+        -d '{"prompt": "Explain the dialectics of distributed systems."}'
+```
+     
+## Limitations & Production Scaling
+This specific architecture is engineered as a lightweight, zero-cost edge demonstration. If you are migrating this to a production multi-node cluster, you must address the following structural gaps:
+
+* Authentication (`service/auth.py`): Currently utilizes a static Python set for API key validation. Production requires integration with a persistent database (e.g., PostgreSQL/Redis) and dynamic token hashing.
+
+* Rate Limiting (`security/rate_limiter.py`): Operates on a transient, localized ASGI in-memory dictionary. Upon container restart, the limits reset. In a multi-worker production environment, this will cause state fracturing.
+
+## Open-Source Contributions & PRs
+This repository is strictly open-source. For infrastructure engineers looking to harden the pipeline, Pull Requests are currently open for the following architectural upgrades:
+
+1. Implementation of a lightweight Redis caching layer to replace the in-memory token bucket.
+
+2. Integration of a stateless authentication router via JWTs or a database engine.
