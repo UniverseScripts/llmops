@@ -8,11 +8,15 @@ from routers import handle_request
 import time
 import logging
 from security.rate_limiter import limiter
+from core.db.config import init_db
 
 
 @asynccontextmanager
 async def Lifespan(app: FastAPI):
     print("🚀 Starting Enterprise Inference Node...")
+    
+    await init_db()
+    print("✔️ Database Setup Complete!")
     
     model_id="google/flan-t5-base"
     peft_model_dir="./core/lora-flan-t5-dolly"
