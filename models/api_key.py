@@ -10,6 +10,3 @@ class ApiKey(Base):
     valid_api_keys = Column(String, nullable=False)
     
     user = relationship("User", back_populates="api")
-    
-    
-api_key = ApiKey()
