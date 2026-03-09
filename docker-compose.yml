@@ -1,4 +1,3 @@
-version: "4.0"
 services:
   llm-node:
     build: .
@@ -10,27 +9,30 @@ services:
             - capabilities: [gpu]
               driver: nvidia
               count: all
-    ports:
-      - "8000:8000"
     depends_on:
       - redis
       - postgres
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    environment:
+      PGUSER: postgres #Use Superaccount by Default, change if needed
+      PGPASSWORD: placeholder #Replace wth your user password here
+      PGDATABASE: llmops 
+      PGHOST: edge-db
+      PGPORT: 5432
     restart: unless-stopped
     networks:
       - edge-network
     labels:
-      - "traefik.enable=true" # Enable Traefik for this service
-      # Define routing rule for the web app
+      - "traefik.enable=true"
       - "traefik.http.routers.llmapp.rule=PathPrefix(`/`)" 
       - "traefik.http.services.llmapp.loadbalancer.server.port=8000"
       
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: edge-ingress-tunnel
-    command: tunnel --url http://traefik:80
+    command: tunnel --protocol http2 --url http://traefik:80
     restart: unless-stopped
     depends_on:
       - traefik
@@ -41,8 +43,8 @@ services:
     image: postgres:16-alpine
     container_name: edge-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: placeholder
+      POSTGRES_USER: postgres #Use Superaccount by Default, change if needed
+      POSTGRES_PASSWORD: placeholder #Replace wth your user password here
       POSTGRES_DB: llmops
     ports:
       - "5432:5432"
@@ -60,16 +62,18 @@ services:
       - edge-network
     
   traefik:
-    image: traefik:v3.2
+    image: traefik:v3.6.4
     container_name: edge-lb
+    # user: root -> Optional for disparate OS
     command:
+      - "--log.level=DEBUG"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
+      # - "--providers.docker.endpoint=unix:///var/run/docker.sock" -> Optional for disparate OS 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
     networks:
       - edge-network
 
