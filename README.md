@@ -21,7 +21,7 @@ To execute this orchestration matrix, the host machine must possess:
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repository-url>
+   git clone https://github.com/universescripts/llmops.git
    cd llmops
    ```
 2. **Boot the Orchestration (Detached):**
