@@ -21,8 +21,7 @@ To execute this orchestration matrix, the host machine must possess:
 ## Deployment Matrix
 
 **1. Clone the repository:**
-```
-bash
+```bash
 git clone https://github.com/universescripts/llmops.git
 cd llmops
 ```
