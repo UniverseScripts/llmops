@@ -10,11 +10,11 @@ AsyncLocalSession = sessionmaker(bind=engine, class_=AsyncSession, expire_on_com
 Base = declarative_base()
 
 async def get_db():
-    with AsyncLocalSession() as session:
+    async with AsyncLocalSession() as session:
         try:
             yield session
         finally:
-            session.close()
+            await session.close()
 
            
 async def init_db():
