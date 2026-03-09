@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PGUSER: str
-    PGPASS: str
+    PGPASSWORD: str
     PGHOST: str
-    PGDB: str
+    PGDATABASE: str
     PGPORT: int
     
     @property
@@ -12,9 +12,9 @@ class Settings(BaseSettings):
         from urllib.parse import quote_plus
         
         user = quote_plus(self.PGUSER)
-        password = quote_plus(self.PGPASS)
+        password = quote_plus(self.PGPASSWORD)
     
-        return f'postgresql+asyncpg://{user}:{password}@{self.PGHOST}:{self.PGPORT}/{self.PGDB}'
+        return f'postgresql+asyncpg://{user}:{password}@{self.PGHOST}:{self.PGPORT}/{self.PGDATABASE}'
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
             
