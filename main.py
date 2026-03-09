@@ -13,6 +13,7 @@ from core.db.config import init_db
 from models.users import User
 from models.api_key import ApiKey
 
+
 @asynccontextmanager
 async def Lifespan(app: FastAPI):
     print("🚀 Starting Enterprise Inference Node...")
@@ -91,7 +92,7 @@ async def rate_limiter(request: Request, call_next):
         return await call_next(request)
     
     client_ip = request.headers.get("CF-Connecting-IP") or request.headers.get("X-Forwarded-For") or request.client.host
-    if not limiter.is_allowed(client_ip):
+    if not await limiter.is_allowed(client_ip):
         return JSONResponse(status_code=status.HTTP_429_TOO_MANY_REQUESTS, content={"detail": "Strict rate limit exceeded. Upgrade enterprise license for higher concurrency."})
     
     response = await call_next(request)
