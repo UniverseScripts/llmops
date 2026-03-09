@@ -42,7 +42,7 @@ services:
     container_name: edge-db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Nomurayoshio@2707
+      POSTGRES_PASSWORD: placeholder
       POSTGRES_DB: llmops
     ports:
       - "5432:5432"
