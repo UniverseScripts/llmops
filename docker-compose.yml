@@ -12,12 +12,19 @@ services:
               count: all
     ports:
       - "8000:8000"
+    depends_on:
+      - cloudflared
     dns:
       - 8.8.8.8
       - 1.1.1.1
     restart: unless-stopped
     networks:
       - edge-network
+    labels:
+      - "traefik.enable=true" # Enable Traefik for this service
+      # Define routing rule for the web app
+      - "traefik.http.routers.webapp.rule=Host(`edge-llmops.com`)" 
+      - "traefik.http.services.webapp.loadbalancer.server.port=8000"
       
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -28,6 +35,29 @@ services:
       - llm-node
     networks:
       - edge-network
+
+  redis:
+    image: redis:alpine
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - edge-network
+    
+  traefik:
+    image: traefik:v3.2
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --api.insecure=true
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - edge-network
+
 
 networks:
   edge-network:
