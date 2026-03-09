@@ -10,6 +10,8 @@ import logging
 from security.rate_limiter import limiter
 from core.db.config import init_db
 
+from models.users import User
+from models.api_key import ApiKey
 
 @asynccontextmanager
 async def Lifespan(app: FastAPI):
