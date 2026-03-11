@@ -72,7 +72,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("LLMOps Telemetry")
 
 REQUEST_COUNT = Counter("llmops_request_total", "Total inference requests", ["method", "endpoint", "http_status"])
-REQUEST_LATENCY = Histogram("llmops_request_latency_seconds", "Inference Latency", ["endpoints"])
+REQUEST_LATENCY = Histogram("llmops_request_latency_seconds", "Inference Latency", ["endpoint"])
 
 @app.middleware("http")
 async def telemetry_middleware(request: Request, call_next):
@@ -81,8 +81,8 @@ async def telemetry_middleware(request: Request, call_next):
     process_time = time.time() - start_time
     
     if request.url.path != "/metrics":
-        REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path, http_status=response.staus_code)
-        REQUEST_LATENCY.labels(endpoint=request.url.path)
+        REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path, http_status=response.status_code).inc()
+        REQUEST_LATENCY.labels(endpoint=request.url.path).observe(process_time)
         
     logger.info(
         f"Method: {request.method} | Path: {request.url.path} | "
