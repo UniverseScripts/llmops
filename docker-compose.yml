@@ -95,10 +95,8 @@ services:
     restart: unless-stopped
     networks:
       - edge-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
-      - "traefik.http.routers.grafana.loadbalancer.server.port=3000"
+    ports:
+      - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
 
