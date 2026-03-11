@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 import torch
@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from routers import handle_request
 import time
 import logging
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from security.rate_limiter import limiter
 from core.db.config import init_db
 
@@ -70,7 +71,8 @@ async def HealthCheck():
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("LLMOps Telemetry")
 
-
+REQUEST_COUNT = Counter("llmops_request_total", "Total inference requests", ["method", "endpoint", "http_status"])
+REQUEST_LATENCY = Histogram("llmops_request_latency_seconds", "Inference Latency", ["endpoints"])
 
 @app.middleware("http")
 async def telemetry_middleware(request: Request, call_next):
@@ -78,12 +80,19 @@ async def telemetry_middleware(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     
+    if request.url.path != "/metrics":
+        REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path, http_status=response.staus_code)
+        REQUEST_LATENCY.labels(endpoint=request.url.path)
+        
     logger.info(
         f"Method: {request.method} | Path: {request.url.path} | "
         f"Status: {response.status_code} | Latency: {process_time:.4f}s"
     )
-
     return response
+
+@app.get("/metrics", description="Prometheus Info Scrapper")
+async def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.middleware("http")

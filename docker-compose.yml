@@ -77,6 +77,31 @@ services:
     networks:
       - edge-network
 
+  prometheus:
+    image: prom/prometheus:v2.50.1
+    container_name: edge-prom-logger
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - edge-network
+
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: edge-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=REDACTED
+    restart: unless-stopped
+    networks:
+      - edge-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.loadbalancer.server.port=3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 
 networks:
   edge-network:
@@ -84,3 +109,5 @@ networks:
 
 volumes:
   pgdata:
+  prom_data:
+  grafana_data:
