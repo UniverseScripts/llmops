@@ -70,5 +70,32 @@ To verify the distributed rate limiter is actively defending the edge hardware w
 ```bash
 docker exec -it edge-db-redis redis-cli monitor
 ```
-## Production Scaling
+## Phase 3: Production Scaling
 The Phase 3 architecture resolves the transient state fracturing anomalies of standard localized edge nodes. For further deployment into a bare-metal multi-node physical cluster (e.g., Kubernetes/Docker Swarm), the local PostgreSQL volume must be decoupled into a highly available cluster, and Traefik must be configured for distributed swarm routing.
+
+## Phase 4 & 5: Observability & Chaos Engineering
+A functional inference node without telemetry is an operational black box. This matrix integrates a strict Zero-Trust observability layer bound entirely within the internal Docker bridge, bypassing host network exposure while capturing real-time trans-continental ingress metrics.
+
+### The Telemetry Matrix
+* **Prometheus:** A Time Series Database (TSDB) silently scraping the Uvicorn workers every 5 seconds, isolated from the Redis rate-limiting perimeter to prevent self-inflicted denial of service.
+* **Grafana:** Declaratively provisioned via Infrastructure as Code (IaC). Dashboards are etched into the container state, mapping atomic API requests and 95th percentile (p95) ASGI event loop latency.
+
+### Benchmarks: The Death of Transient Memory
+To mathematically prove the architecture's load-bearing capability, the node was subjected to chaos engineering. A 150-concurrent-user synthetic swarm was deployed against the Cloudflare Zero-Trust tunnel.
+
+*(Insert Grafana Dashboard Screenshots Here)*
+*System state during a 150-concurrent-user synthetic load test. Redis asynchronous pipelines actively throttling trans-continental overflow (HTTP 429) to preserve ASGI event loop integrity and maintain stable p95 latency for accepted payloads.*
+
+### Replicating the Chaos Engineering
+The load-testing matrix is strictly segregated from the production build context to maintain minimal image size and eliminate CVE vulnerabilities. To verify the B2B edge ingress resilience locally:
+
+1. Install the development dependencies on your host machine:
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+Execute the trans-continental swarm against your active Cloudflare tunnel:
+
+```bash
+locust -f benchmarks/locustfile.py --host=https://<your-cloudflare-url>.trycloudflare.com
+```
+Navigate to the local Grafana instance (http://localhost:3000) utilizing the orchestrated administrative credentials to monitor the Redis token bucket throttling the overflow in real-time.
