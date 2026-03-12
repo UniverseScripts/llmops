@@ -65,4 +65,8 @@ Execute the trans-continental swarm against your active Cloudflare tunnel:
 ```bash
 locust -f benchmarks/locustfile.py --host=https://<your-cloudflare-url>.trycloudflare.com
 ```
-Navigate to the local Grafana instance (`http://localhost:3000`) utilizing the orchestrated administrative credentials (admin / enterprise_admin_2026) to monitor the Redis token bucket throttling the overflow in real-time.
+Navigate to the local Grafana instance (`http://localhost:3000`) utilizing the orchestrated administrative credentials shown below to monitor the Redis token bucket throttling the overflow in real-time.
+```plaintext
+Username: admin
+Passwrod: enterprise_admin_2026
+```
