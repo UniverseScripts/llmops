@@ -68,5 +68,5 @@ locust -f benchmarks/locustfile.py --host=https://<your-cloudflare-url>.trycloud
 Navigate to the local Grafana instance (`http://localhost:3000`) utilizing the orchestrated administrative credentials shown below to monitor the Redis token bucket throttling the overflow in real-time.
 ```plaintext
 Username: admin
-Passwrod: enterprise_admin_2026
+Password: enterprise_admin_2026
 ```
