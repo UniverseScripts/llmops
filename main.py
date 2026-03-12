@@ -11,9 +11,6 @@ from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_
 from security.rate_limiter import limiter
 from core.db.config import init_db
 
-from models.users import User
-from models.api_key import ApiKey
-
 
 @asynccontextmanager
 async def Lifespan(app: FastAPI):
@@ -74,21 +71,6 @@ logger = logging.getLogger("LLMOps Telemetry")
 REQUEST_COUNT = Counter("llmops_request_total", "Total inference requests", ["method", "endpoint", "http_status"])
 REQUEST_LATENCY = Histogram("llmops_request_latency_seconds", "Inference Latency", ["endpoint"])
 
-@app.middleware("http")
-async def telemetry_middleware(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    
-    if request.url.path != "/metrics":
-        REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path, http_status=response.status_code).inc()
-        REQUEST_LATENCY.labels(endpoint=request.url.path).observe(process_time)
-        
-    logger.info(
-        f"Method: {request.method} | Path: {request.url.path} | "
-        f"Status: {response.status_code} | Latency: {process_time:.4f}s"
-    )
-    return response
 
 @app.get("/metrics", description="Prometheus Info Scrapper")
 async def metrics():
@@ -97,7 +79,7 @@ async def metrics():
 
 @app.middleware("http")
 async def rate_limiter(request: Request, call_next):
-    if request.url.path == "/":
+    if request.url.path in ["/", "/metrics"]:
         return await call_next(request)
     
     client_ip = request.headers.get("CF-Connecting-IP") or request.headers.get("X-Forwarded-For") or request.client.host
@@ -106,5 +88,23 @@ async def rate_limiter(request: Request, call_next):
     
     response = await call_next(request)
     return response
+
+
+@app.middleware("http")
+async def telemetry_middleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    
+    if request.url.path not in ["/", "/metrics"]:
+        REQUEST_COUNT.labels(method=request.method, endpoint=request.url.path, http_status=response.status_code).inc()
+        REQUEST_LATENCY.labels(endpoint=request.url.path).observe(process_time)
+        
+        logger.info(
+            f"Method: {request.method} | Path: {request.url.path} | "
+            f"Status: {response.status_code} | Latency: {process_time:.4f}s"
+        )
+    return response
+
 
 app.include_router(handle_request.router)
