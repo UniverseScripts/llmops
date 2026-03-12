@@ -32,7 +32,7 @@ A functional inference node without telemetry is an operational black box. This 
 #### Benchmarks: The Death of Transient Memory
 To mathematically prove the architecture's load-bearing capability, the node was subjected to chaos engineering. A 150-concurrent-user synthetic swarm was deployed against the Cloudflare Zero-Trust tunnel.
 
-*(Insert your Grafana Phase 5 Dashboard Screenshot Here)*
+<img width="916" height="335" alt="429 RPS Log" src="https://github.com/user-attachments/assets/9c23d47a-ae0a-46f9-a664-cd94f2234368" />
 > *System state during a 150-concurrent-user synthetic load test. Redis asynchronous pipelines actively throttling trans-continental overflow (HTTP 429) to preserve ASGI event loop integrity and maintain stable p95 latency for accepted payloads.*
 
 ---
