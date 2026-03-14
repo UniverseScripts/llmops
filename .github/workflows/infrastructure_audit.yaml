@@ -34,5 +34,5 @@ jobs:
 
       - name: Prometheus and Grafana for Network Logging
         run: |
-          docker run -rm -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus:v2.50.1 promtool check config /etc/prometheus/prometheus.yml
+          docker run --rm -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus:v2.50.1 promtool check config /etc/prometheus/prometheus.yml
   
