@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
 from schemas.generate import GenerateContext, GenerateResponse
 import torch
 import starlette.concurrency as concurrency
-from service.auth import verify_api_key
+from service.verify_api import verify_api_key
 from service.billing import report_token_consumption
 
 router = APIRouter(prefix="/generate", tags=["generate"])

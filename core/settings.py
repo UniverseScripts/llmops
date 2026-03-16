@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     PGHOST: str
     PGDATABASE: str
     PGPORT: int
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
     
     @property
     def DATABASE_URL(self):
