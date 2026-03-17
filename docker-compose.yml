@@ -17,7 +17,7 @@ services:
       - 1.1.1.1
     environment:
       PGUSER: postgres #Use Superaccount by Default, change if needed
-      PGPASSWORD: Nomurayoshio@2707 #Replace wth your user password here
+      PGPASSWORD: placeholder #Replace wth your user password here
       PGDATABASE: llmops 
       PGHOST: edge-db
       PGPORT: 5432
@@ -44,7 +44,7 @@ services:
     container_name: edge-db
     environment:
       POSTGRES_USER: postgres #Use Superaccount by Default, change if needed
-      POSTGRES_PASSWORD: Nomurayoshio@2707 #Replace wth your user password here
+      POSTGRES_PASSWORD: placeholder #Replace wth your user password here
       POSTGRES_DB: llmops
     ports:
       - "5432:5432"
