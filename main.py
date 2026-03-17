@@ -4,7 +4,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, BitsAndBytesConfi
 from peft import PeftModel
 import torch
 from contextlib import asynccontextmanager
-from routers import generate_request, authenticate
+from routers import generate_request, authenticate, stripe
 import time
 import logging
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
@@ -56,7 +56,8 @@ async def Lifespan(app: FastAPI):
     del app.state.model
     del app.state.tokenizer
     torch.cuda.empty_cache()
-
+    
+    
 app = FastAPI(title="Enterprise-grade Inference API", description="A backend router for scalable inference", version="0.1.0", lifespan=Lifespan)
 
 
@@ -108,3 +109,4 @@ async def telemetry_middleware(request: Request, call_next):
 
 app.include_router(authenticate.router)
 app.include_router(generate_request.router)
+app.include_router(stripe.router)
