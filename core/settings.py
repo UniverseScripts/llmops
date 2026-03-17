@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     PGPORT: int
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
+    STRIPE_WEBHOOK_SECRET: str
     
     @property
     def DATABASE_URL(self):
