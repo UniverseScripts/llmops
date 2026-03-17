@@ -1,4 +1,6 @@
-# Enterprise Edge Cluster: Distributed Local LLMOps
+# Enterprise Edge Cluster: Distributed Local LLMOps (Stripe Billing Integration)
+## The branch "enterprise-saas" integrates Stripe, including setups such as account provision and token billing.
+## Status: Finished, branch frozen.
 
 A globally routable, zero-trust edge inference node engineered to serve B2B payloads without hyperscaler cloud billing. This architecture eradicates transient memory vulnerabilities, utilizing atomic state pipelines and strict container isolation to serve quantized machine learning models under severe concurrent load.
 
@@ -29,6 +31,25 @@ A functional inference node without telemetry is an operational black box. This 
 * **The TSDB Scraper:** Prometheus silently scrapes the Uvicorn workers every 5 seconds. The `/metrics` endpoint is strictly whitelisted from the Redis token bucket to prevent a self-inflicted denial of service on the telemetry layer.
 * **Declarative Dashboards:** Grafana is provisioned via Infrastructure as Code (IaC). Dashboards are etched directly into the container state, requiring zero manual UI configuration.
 
+### Phase 6: The Enterprise Monetization Matrix (SaaS Edition)
+The open-source inference engine is fundamentally unmetered. This `enterprise-saas` branch introduces a rigorous, stateful financial perimeter designed to extract B2B capital without fracturing the core inference latency. 
+The architecture achieves this by strictly bifurcating identity authorization from capital metering.
+ 
+1. The API Gateway & Stateless Authorization
+To prevent database I/O bottlenecks during concurrent inference, human identity and programmatic access are structurally isolated.
+- **Human Dashboard (Stateless):** Enterprise administrators authenticate via standard credentials. The node issues a JSON Web Token (JWT). The cryptography mathematically proves identity, allowing the UI to interact with the billing layer without querying the database on every render.
+- **Programmatic Access (Stateful):** Human users provision deterministic, localized API keys (`sk_live_...`). These keys are bound directly to the PostgreSQL database, acting as the bridge between the inference request and the global capital ledger.
+
+2. The Asynchronous Financial Ledger (Stripe)
+Flat-rate billing mathematically guarantees infrastructure ruin under LLM compute loads. This matrix strictly enforces consumption-based token metering.
+- **Local Deduction:** The Redis token bucket intercepts the ASGI event loop, instantly calculating the tokenizer length and deducting the payload from the localized token balance.
+- **Global Synchronization:** To preserve the p95 latency of the HTTP response, the trans-continental network call to the Stripe Metered Billing API is deferred to a FastAPI `BackgroundTask`. The node extracts capital asynchronously.
+
+3. The Cryptographic Webhook Perimeter
+Client-side financial state is inherently invalid. Capital replenishment is handled exclusively via server-to-server communication.
+- Inbound Stripe payloads signaling successful invoice payments are intercepted by `routers/webhooks.py`.
+- The payload is verified against a localized symmetric cryptographic signature (`STRIPE_WEBHOOK_SECRET`). Spoofed payloads are violently dropped. Authenticated payloads directly execute an asynchronous `db.commit()` to refill the enterprise client's token ledger.
+
 #### Benchmarks: The Death of Transient Memory
 To mathematically prove the architecture's load-bearing capability, the node was subjected to chaos engineering. A 150-concurrent-user synthetic swarm was deployed against the Cloudflare Zero-Trust tunnel.
 
@@ -40,7 +61,21 @@ To mathematically prove the architecture's load-bearing capability, the node was
 
 ## Deployment Protocol
 
-### 1. Production Matrix Compilation
+### 1. Environmental Provisioning
+Create an `.env` file in the root directory mapping your Stripe developer credentials:
+```env
+PGUSER=postgres
+PGPASSWORD=placeholder_enter_your_psql_pw_here
+PGDATABASE=llmops
+PGHOST=localhost
+PGPORT=5432
+SECRET_KEY=Ubdzme...
+ALGORITHM=HS256
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+### 2. Production Matrix Compilation
 To compile and boot the isolated infrastructure:
 ```bash
 docker-compose up -d --build
@@ -55,7 +90,10 @@ docker logs edge-ingress-tunnel
 ```
 Locate the *.trycloudflare.com URL. All external payloads must be directed to https://<URL>/generate/.
 
-### 3. Replicating the Chaos Engineering
+### 3. Ingress and Registration
+Route to your Cloudflare tunnel ingress. You must execute a POST /register payload first. The node will intercept the registration, provision a global Stripe Customer ID, and map it to your local PostgreSQL row before confirming creation.
+
+### 4. Replicating the Chaos Engineering
 The load-testing matrix is strictly segregated from the production build context to maintain minimal image size and eliminate CVE vulnerabilities. To verify the B2B edge ingress resilience locally:
 
 Install the development dependencies on your host machine:
