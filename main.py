@@ -4,7 +4,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, BitsAndBytesConfi
 from peft import PeftModel
 import torch
 from contextlib import asynccontextmanager
-from routers import generate_request, authenticate, stripe
+from routers import generate_request, authenticate, webhook
 import time
 import logging
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
@@ -109,4 +109,4 @@ async def telemetry_middleware(request: Request, call_next):
 
 app.include_router(authenticate.router)
 app.include_router(generate_request.router)
-app.include_router(stripe.router)
+app.include_router(webhook.router)

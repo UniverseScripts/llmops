@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Request, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.generate import GenerateContext, GenerateResponse
 import torch
 import starlette.concurrency as concurrency
 from service.verify_api import verify_api_key
-from service.billing import report_token_consumption
+from core.db.config import get_db
+
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
@@ -21,7 +23,7 @@ def synchronous_generation(prompt: str, model, tokenizer, max_new_tokens: int) -
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
     
 @router.post("/", response_model=GenerateResponse, dependencies=[Depends(verify_api_key)])
-async def GenerateRequest(payload: GenerateContext, request: Request, verify_api_key = Depends(verify_api_key), background_tasks = BackgroundTasks):
+async def GenerateRequest(payload: GenerateContext, request: Request, verify_api_key = Depends(verify_api_key), db: AsyncSession = Depends(get_db)):
 
     model = getattr(request.app.state, "model", None)
     tokenizer = getattr(request.app.state, "tokenizer", None)
@@ -46,14 +48,8 @@ async def GenerateRequest(payload: GenerateContext, request: Request, verify_api
         tokens_consumed = len(prompt.split()) + len(result.split())
         
         verify_api_key.token_balance -= tokens_consumed
-        
-        if verify_api_key.owner.stripe_customer_id:
-            background_tasks.add_task(
-                report_token_consumption,
-                verify_api_key.owners.stripe_customer_id,
-                tokens_consumed
-            )
-        
+        await db.commit()
+
         return GenerateResponse(completion=result)
         
     except Exception as e:
