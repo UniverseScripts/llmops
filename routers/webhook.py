@@ -18,7 +18,7 @@ async def create_lsqueeze_transaction(request: Request, db: AsyncSession = Depen
     payload = await request.body()
     header = request.headers.get("x-signature")
     
-    if not header or LEMON_SQUEEZY_WEBHOOK_SECRET:
+    if not header or not LEMON_SQUEEZY_WEBHOOK_SECRET:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cryptographic perimeter failure.")
 
     secret_bytes = bytes(LEMON_SQUEEZY_WEBHOOK_SECRET, 'utf-8')

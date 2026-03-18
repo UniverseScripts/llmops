@@ -24,7 +24,7 @@ async def sign_up(request: UserCreate, db: AsyncSession = Depends(get_db)):
  
     create_user_model = User(
         username = request.username,
-        password = bcrypt_context.hash(password_truncate),
+        hashed_password = bcrypt_context.hash(password_truncate),
         email = request.email,
         is_active = True,
     )

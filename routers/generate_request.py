@@ -22,13 +22,13 @@ def synchronous_generation(prompt: str, model, tokenizer, max_new_tokens: int) -
         
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
     
-@router.post("/", response_model=GenerateResponse, dependencies=[Depends(verify_api_key)])
-async def GenerateRequest(payload: GenerateContext, request: Request, verify_api_key = Depends(verify_api_key), db: AsyncSession = Depends(get_db)):
+@router.post("/", response_model=GenerateResponse)
+async def GenerateRequest(payload: GenerateContext, request: Request, api_key = Depends(verify_api_key), db: AsyncSession = Depends(get_db)):
 
     model = getattr(request.app.state, "model", None)
     tokenizer = getattr(request.app.state, "tokenizer", None)
     
-    if verify_api_key.token_balance <= 0:
+    if api_key.token_balance <= 0:
         raise HTTPException(status_code=402, detail="Payment Required: Token balance exhausted.")
 
     if model is None or tokenizer is None:
@@ -47,7 +47,7 @@ async def GenerateRequest(payload: GenerateContext, request: Request, verify_api
         
         tokens_consumed = len(prompt.split()) + len(result.split())
         
-        verify_api_key.token_balance -= tokens_consumed
+        api_key.token_balance -= tokens_consumed
         await db.commit()
 
         return GenerateResponse(completion=result)
