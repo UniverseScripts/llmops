@@ -1,5 +1,6 @@
 import time
 import redis.asyncio as redis
+import os
 
 class DistributedRateLimiter:
     def __init__(self, requests_per_minute: int, redis_url: str = "redis://redis:6379/0") -> None:
@@ -24,5 +25,6 @@ class DistributedRateLimiter:
         if request_count >= self.rate_limit:
             return False
         return True
-    
-limiter = DistributedRateLimiter(requests_per_minute=10)
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis-service:6379")
+limiter = DistributedRateLimiter(requests_per_minute=10, redis_url=REDIS_URL)
