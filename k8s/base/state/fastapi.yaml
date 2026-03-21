@@ -23,8 +23,16 @@ spec:
           ports:
             - containerPort: 8000
           env:
-            - name: POSTGRES_URL
-              value: "postgresql+asyncpg://admin:secure_local_password@postgres-service:5432/llmops-ledger"
+            - name: PGUSER
+              value: "admin"
+            - name: PGPASSWORD
+              value: "secure_local_password"
+            - name: PGHOST
+              value: "postgres-service"
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: "llmops-ledger"
             - name: REDIS_URL
               value: "redis://redis-service:6379"
             - name: SECRET_KEY
