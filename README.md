@@ -58,6 +58,9 @@ kubectl apply -f k8s/base/state/
 ```
 
 ### 3. The Observability Perimeter
+
+<img width="916" height="335" alt="429 RPS Log" src="./image/grafana_with_k8s.png" />
+
 Deploy the declarative telemetry to monitor the routing:
 ```bash
 kubectl apply -f k8s/base/observability/
@@ -77,7 +80,9 @@ kubectl exec -it <postgres-pod-name> -- psql -U admin -d llmops-ledger -c "SELEC
 ```
 Inflate the ledger balance to absorb the swarm:
 ```bash
-kubectl exec -it <postgres-pod-name> -- psql -U admin -d llmops-ledger -c "UPDATE api_key SET token_balance = 100000000 WHERE valid_api_keys = '<YOUR_EXTRACTED_KEY>';"
+kubectl exec -it <postgres-pod-name> -- psql -U admin -d llmops-ledger -c
+"INSERT INTO users (id, username, email, hashed_password, is_active) VALUES (1, 'developer', 'a@gmail.com', 'haha', true);
+INSERT INTO api_key (id, user_id, valid_api_keys, is_active, token_balance) VALUES ('<YOUR_API_KEY>', 1, '<YOUR_API_KEY>', true, 10000000);"
 ```
 Inject the key into locustfile.py and ignite the localized swarm, spoofing distributed IP addresses:
 ```bash
