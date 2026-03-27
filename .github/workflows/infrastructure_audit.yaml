@@ -28,6 +28,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Create Kubernetes Control Plane
+        run: |
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          k3d cluster create ci-matrix --no-lb
+
       - name: Audit Kubernetes
         run: |
           echo "Validating K3s Syntax..."
